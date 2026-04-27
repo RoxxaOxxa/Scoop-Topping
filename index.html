@@ -713,9 +713,10 @@
   <!-- FLAVOR SECTION -->
   <section id="flavor">
     <div class="section-title reveal">Pilih Rasa Es Krim 🍨</div>
-    <div class="section-sub reveal">Empat rasa favorit untuk mood-mu hari ini!</div>
+    <div class="section-sub reveal" id="flavorSubtitle">Empat rasa favorit untuk mood-mu hari ini!</div>
     <div class="pill-divider reveal"><span class="p1"></span><span class="p2"></span><span class="p3"></span></div>
-    <div class="flavor-grid reveal">
+    <div class="flavor-grid reveal" id="flavorShowcase">
+      <!-- Flavor cards rendered dynamically by JS -->
       <div class="flavor-card" data-flavor="Vanilla" onclick="selectFlavor(this)">
         <div class="flavor-icon-wrap" style="background:linear-gradient(135deg,#FFF8DC,#FFE88A)"><span class="flavor-icon">🍦</span></div>
         <div class="flavor-name">Vanilla</div>
@@ -745,18 +746,18 @@
 
   <!-- CONTAINER SECTION -->
   <section id="container-section">
-    <div class="section-title reveal">Pilih Tempat 🥤</div>
+    <div class="section-title reveal">Pilih Tempat 🍨</div>
     <div class="section-sub reveal">Mau dinikmati pakai apa?</div>
     <div class="pill-divider reveal"><span class="p1"></span><span class="p2"></span><span class="p3"></span></div>
     <div class="container-grid reveal">
       <div class="container-card" data-container="Cup Kecil" onclick="selectContainer(this)">
-        <div class="container-icon-wrap"><span class="container-icon">🥛</span></div>
+        <div class="container-icon-wrap"><span class="container-icon">🍧</span></div>
         <div class="container-name">Cup Kecil</div>
         <div class="container-desc">Pas buat 1 porsi</div>
         <span class="container-check">✓</span>
       </div>
       <div class="container-card" data-container="Cup Besar" onclick="selectContainer(this)">
-        <div class="container-icon-wrap"><span class="container-icon">🪣</span></div>
+        <div class="container-icon-wrap"><span class="container-icon">🍨</span></div>
         <div class="container-name">Cup Besar</div>
         <div class="container-desc">Buat yang lapar</div>
         <span class="container-check">✓</span>
@@ -823,7 +824,7 @@
 
       <!-- Flavor radio -->
       <div class="form-group">
-        <label>Rasa <span class="req">*</span></label>
+        <label>Rasa <span class="req">*</span> <span id="flavorFormNote" style="font-weight:400;color:#C9A8A8"></span></label>
         <div class="form-toppings" id="formFlavor">
           <label class="form-topping-label flavor-opt" onclick="toggleRadio(this,'formFlavor')">
             <input type="radio" name="flavor" value="Vanilla" /> 🍦 Vanilla
@@ -837,6 +838,10 @@
           <label class="form-topping-label flavor-opt" onclick="toggleRadio(this,'formFlavor')">
             <input type="radio" name="flavor" value="Matcha" /> 🍵 Matcha
           </label>
+          <!-- All Variant — only shown for Cup Besar -->
+          <label class="form-topping-label flavor-opt" id="allVariantOpt" style="display:none;" onclick="toggleRadio(this,'formFlavor')">
+            <input type="radio" name="flavor" value="All Variant" /> 🌈 All Variant
+          </label>
         </div>
       </div>
 
@@ -845,10 +850,10 @@
         <label>Tempat <span class="req">*</span></label>
         <div class="form-toppings" id="formContainer">
           <label class="form-topping-label" onclick="toggleRadio(this,'formContainer')">
-            <input type="radio" name="container" value="Cup Kecil" /> 🥛 Cup Kecil
+            <input type="radio" name="container" value="Cup Kecil" /> 🍧 Cup Kecil
           </label>
           <label class="form-topping-label" onclick="toggleRadio(this,'formContainer')">
-            <input type="radio" name="container" value="Cup Besar" /> 🪣 Cup Besar
+            <input type="radio" name="container" value="Cup Besar" /> 🍨 Cup Besar
           </label>
           <label class="form-topping-label" onclick="toggleRadio(this,'formContainer')">
             <input type="radio" name="container" value="Corn" /> 🍦 Corn
@@ -953,8 +958,61 @@
           document.querySelectorAll('.container-card').forEach(card => {
             card.classList.toggle('selected', card.dataset.container === cb.value);
           });
+          // Update flavors when container changes via form pills
+          if (cb.checked) {
+            const isBesar = cb.value === 'Cup Besar';
+            const flavors = isBesar ? FLAVORS_BESAR : FLAVORS_ALL;
+            renderFlavorCards(flavors);
+            renderFormFlavors(flavors);
+            const subtitle = document.getElementById('flavorSubtitle');
+            const note = document.getElementById('flavorFormNote');
+            if (isBesar) {
+              subtitle.textContent = 'Khusus Cup Besar: Vanilla, Strawberry, Coklat, atau All Variant! 🌈';
+              if (note) note.textContent = '(khusus Cup Besar)';
+            } else {
+              subtitle.textContent = 'Empat rasa favorit untuk mood-mu hari ini!';
+              if (note) note.textContent = '';
+            }
+          }
         }
       }, 0);
+    }
+
+    /* ── Flavor definitions ── */
+    const FLAVORS_ALL = [
+      { value: 'Vanilla',    icon: '🍦', name: 'Vanilla',    desc: 'Creamy &amp; classic',   bg: 'linear-gradient(135deg,#FFF8DC,#FFE88A)' },
+      { value: 'Strawberry', icon: '🍓', name: 'Strawberry', desc: 'Sweet &amp; fruity',    bg: 'linear-gradient(135deg,#FFE4EC,#FFB3C6)' },
+      { value: 'Coklat',     icon: '🍫', name: 'Coklat',     desc: 'Rich &amp; indulgent',  bg: 'linear-gradient(135deg,#F5E6D3,#D4956A)' },
+      { value: 'Matcha',     icon: '🍵', name: 'Matcha',     desc: 'Earthy &amp; unique',   bg: 'linear-gradient(135deg,#E8F5E9,#A5D6A7)' },
+    ];
+    const FLAVORS_BESAR = [
+      { value: 'Vanilla',     icon: '🍦', name: 'Vanilla',     desc: 'Creamy &amp; classic',    bg: 'linear-gradient(135deg,#FFF8DC,#FFE88A)' },
+      { value: 'Strawberry',  icon: '🍓', name: 'Strawberry',  desc: 'Sweet &amp; fruity',     bg: 'linear-gradient(135deg,#FFE4EC,#FFB3C6)' },
+      { value: 'Coklat',      icon: '🍫', name: 'Coklat',      desc: 'Rich &amp; indulgent',   bg: 'linear-gradient(135deg,#F5E6D3,#D4956A)' },
+      { value: 'Matcha',      icon: '🍵', name: 'Matcha',      desc: 'Earthy &amp; unique',    bg: 'linear-gradient(135deg,#E8F5E9,#A5D6A7)' },
+      { value: 'All Variant', icon: '🌈', name: 'All Variant', desc: 'Semua rasa!',            bg: 'linear-gradient(135deg,#FFE4EC,#C8F0FA)' },
+    ];
+
+    function renderFlavorCards(flavors) {
+      const grid = document.getElementById('flavorShowcase');
+      grid.innerHTML = flavors.map(f => `
+        <div class="flavor-card" data-flavor="${f.value}" onclick="selectFlavor(this)">
+          <div class="flavor-icon-wrap" style="background:${f.bg}"><span class="flavor-icon">${f.icon}</span></div>
+          <div class="flavor-name">${f.name}</div>
+          <div class="flavor-desc">${f.desc}</div>
+          <span class="flavor-check">✓</span>
+        </div>
+      `).join('');
+    }
+
+    function renderFormFlavors(flavors) {
+      const formFlavor = document.getElementById('formFlavor');
+      const matchaOpt = formFlavor.querySelector('input[value="Matcha"]');
+      const allVariantOpt = document.getElementById('allVariantOpt');
+      const isBesar = flavors === FLAVORS_BESAR;
+      // Matcha selalu tampil; All Variant hanya muncul untuk Cup Besar
+      if (matchaOpt) matchaOpt.closest('.form-topping-label').style.display = '';
+      if (allVariantOpt) allVariantOpt.style.display = isBesar ? '' : 'none';
     }
 
     /* ── Flavor visual card click ── */
@@ -977,6 +1035,20 @@
         r.checked = r.value === val;
         r.closest('.form-topping-label').classList.toggle('checked', r.value === val);
       });
+      // Update flavor options based on container
+      const isBesar = val === 'Cup Besar';
+      const flavors = isBesar ? FLAVORS_BESAR : FLAVORS_ALL;
+      renderFlavorCards(flavors);
+      renderFormFlavors(flavors);
+      const subtitle = document.getElementById('flavorSubtitle');
+      const note = document.getElementById('flavorFormNote');
+      if (isBesar) {
+        subtitle.textContent = 'Khusus Cup Besar: Vanilla, Strawberry, Coklat, atau All Variant! 🌈';
+        if (note) note.textContent = '(khusus Cup Besar)';
+      } else {
+        subtitle.textContent = 'Empat rasa favorit untuk mood-mu hari ini!';
+        if (note) note.textContent = '';
+      }
     }
 
     /* ── WhatsApp Order ── */
